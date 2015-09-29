@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<title>Test16Step</title>
+<meta charset="utf-8">
+<script src="js/jquery-1.11.0.min.js"></script>
+<script src='js/mididevice.js'></script>
+<script src='js/seq.js'></script>
+
+<script type="text/javascript">
+	var seq;
+	function onMIDIMessage(e) {
+		var message=Math.floor(e.receivedTime) + ": ";
+		for (var i=0; i<e.data.length; i++) message+=e.data[i].toString(16)+" ";
+		//console.log(message);
+		if (e.data[0]==0x90) {
+			if (seq) seq.set(e.data[1]);
+		} else if (e.data[0]==0x80) {
+		}
+	}
+
+	function noteon(timestamp,note) {
+		var message = [0x90,note,0x40];
+		//console.log(message);
+		output.send(message,timestamp);
+	}
+	function noteoff(timestamp,note) {
+		var message = [0x80,note,0x40];
+		//console.log(message);
+		output.send(message,timestamp);
+	}
+
+</script>
+
+</head>
+<body>
+<script  type="text/javascript">
+	midiAccess = navigator.requestMIDIAccess({
+		sysex : false
+	}).then(onMIDISuccess, onMIDIFailure);
+</script>
+<label>MIDI In</label>
+<select id="midiInputSelect" onchange="selectMidiInput()">
+	<option value="1">select input port</option>
+</select>
+<label>MIDI Out</label>
+<select id="midiOutputSelect" onchange="selectMidiOutput()">
+	<option value="1">select output port</option>
+</select>
+<div id="panel1" style="position:absolute; left:10px; top:50px; width:500px; height:120px; border-style:solid; border-width:1px;">
+	<div id="stepbtnarea" style="position:absolute; left:10px; top:20px; width:480px; height:60px;">
+	<div id="startbutton" style="position:absolute; left:430px; top:70px; width:40px; height:20px; border-style:solid; border-width:1px; font-size:12px;" onclick="Start()">START</div>
+</div>
+
+<script>
+	seq=new Seq(document.getElementById("stepbtnarea"));
+	function Start() {
+		if (!seq.isplaying()) seq.start();
+		else seq.stop();
+	};
+</script>
+
+</body>
+</html>
