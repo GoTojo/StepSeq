@@ -49,6 +49,7 @@
 </select>
 <div id="panel1" style="position:absolute; left:10px; top:50px; width:500px; height:120px; border-style:solid; border-width:1px;">
 	<div id="stepbtnarea" style="position:absolute; left:10px; top:20px; width:480px; height:60px;">
+	<input type="range" id="temposlider" min="20" max="300" value="120" onchange="ontempochange()" style="position:absolute; left:10px; top:70px; ">
 	<div id="startbutton" style="position:absolute; left:430px; top:70px; width:40px; height:20px; border-style:solid; border-width:1px; font-size:12px;" onclick="Start()">START</div>
 </div>
 
@@ -58,6 +59,9 @@
 		if (!seq.isplaying()) seq.start();
 		else seq.stop();
 	};
+	function ontempochange() {
+		seq.settempo(document.getElementById("temposlider").value);
+	}
 </script>
 
 </body>
