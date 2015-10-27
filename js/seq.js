@@ -105,6 +105,7 @@ var Seq = function(parent) {
 	this.setlaststep(15);
 	this.interval=this.settempo(120); // tempo:120における16分音符の時間間隔
 	this.targettime=0;
+	this.f8count=0;
 	this.setstep(0);
 	this.playing=false;
 	this.parent=parent;
@@ -118,18 +119,21 @@ Seq.prototype = {
 		this.playing=true;
 		var curtime=Math.round(performance.now());
 		this.targettime=curtime+this.interval;
+		this.f8count=0;
 		this.doInterval();
 		this.intervalid=setInterval((function(_this){
       		return function(e){
         	_this.doInterval();
       		};
     	})(this),10);
+    	output.send([0xFA],curtime);
 	},
 	stop: function() {
 		this.playing=false;
 		clearInterval(this.intervalid);
 		for (var step=0;step<16;step++) this.step[step].noteoff(40);
 		this.setstep(0);
+    	output.send([0xFC],performance.now()+50);
 	},
 	isplaying: function() { return this.playing; },
 	setstep: function(step) {
@@ -141,7 +145,7 @@ Seq.prototype = {
 		}
 	},
 	settempo: function(tempo) {
-		return this.interval=Math.round(60000.0/tempo/4.0);
+		return this.interval=Math.round(60000.0/tempo/24.0);
 	},
 	setlaststep: function(laststep) { 
 		if (laststep>0&&laststep<16) this.laststep=laststep; 
@@ -155,11 +159,15 @@ Seq.prototype = {
 	},
 	doInterval: function() {
 		var curtime=Math.round(performance.now());
-		if (this.targettime-curtime<20) {
-			this.step[this.curstep].noteoff(this.targettime);
-			this.step[this.nextstep].noteon(this.targettime);
+		if (this.targettime-curtime<10) {
+			if (++this.f8count>3) {
+				this.step[this.curstep].noteoff(this.targettime);
+				this.step[this.nextstep].noteon(this.targettime);
+				this.setstep(this.nextstep);
+				this.f8count=0;
+			}
 			this.targettime+=this.interval;
-			this.setstep(this.nextstep);
+    		output.send([0xF8],this.targettime);
 		}		
 	}
 };
